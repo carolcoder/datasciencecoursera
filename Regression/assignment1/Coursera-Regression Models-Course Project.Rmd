@@ -1,0 +1,139 @@
+---
+title: "Coursera-Regression Models-Course Project"
+author: "Carolina Mourao de Paula"
+date: "Thursday, July 23, 2015"
+output: pdf_document
+---
+
+# Executive Summary
+
+In this report we will address the following two questions:
+
+- Is an automatic or manual transmission better for MPG?
+- Quantify the MPG difference between automatic and manual transmissions
+
+We will use data that examines fuel efficiency and other 10 aspects of automobile design and performance for 32 automobiles. Some aspects about the data:
+
+- Transmission types can influence the fuel efficiency. 
+- Manual vehicles achieved a 7.2 miles per gallon more than automatic vehicles. 
+- Although that can drive a conclusion, the transmission type is not a particularly good predictor of fuel efficiency. 
+* We were able to run analysis on the cars' variables and build models that concluded cylinders and weight are actually good predictors for fuel efficiency.
+
+# Methodology
+
+First we looked at the data to have an idea of what we were looking at. We see that, next to mpg, we have `r ncol(mtcars) - 1` numeric columns. The other columns represented potential variables for analysis in a regression model to drive conclusions on fuel efficiency.
+
+```{r, results="hide"}
+data(mtcars)
+str(mtcars)  # See appendix for results
+```
+
+# Exploratory data analysis
+
+We ran ANOVA, R squared and pairs plot to identify trends in the different variables applied to a car. The patterns identified were:
+
+- An increase in number of cylinders tends to lead to a decrease in mpg.
+- An increase in hp tends to lead to a decrease in mpg.
+- An increase in rear axle ratio tends (though more variation) to lead to an increase in mpg.
+- An increase in weight, seems to lead to a decrease in mpg
+
+# Results
+
+The test results listed in the appendix section presented some potential variables as regressors, however further analysis filter them down to basically four main variables that were able to relate better to the mpg index. The best model was the model 3, which combined two regressors: cylinder and weight. 
+
+```{r, echo=FALSE, results='asis'}
+data(mtcars)
+fit3 <- lm(mpg ~ cyl + wt + am, data=mtcars)
+```
+
+Its adjusted R squared was **`r summary(fit3)$adj.r.squared`**
+
+The coefficients in model 3 were:
+
+```{r, echo=FALSE, results='asis'}
+library(xtable)
+print(xtable(fit3), type="latex")
+```
+
+This coefficient table indicated that assuming the weight stayed the same, for one additional cylinder, the mpg decreased by 1.5. Also, as the weight increased by 1000 pounds and number of cylinders stayed the same, the mpg decreased by 3.2.
+
+Since the question raised was for the transmission type, we considered the relationship between type of transmission and fuel efficiency in Model 7:
+
+```{r, results='asis'}
+fit7 <- lm(mpg ~ am, data = mtcars)
+print(xtable(fit7), type="latex")
+```
+
+The coefficient for transmission indicated that manual transmission achieved a fuel effiency of 7.24 miles per gallon higher than cars with an automatic transmission. However this model using transmission achieves an adjusted R squared value of **`r summary(fit7)$adj.r.squared`**, which is much worse than model 3, so transmission is much poorer predictor of fuel efficiency than the number of cylinders and weight. 
+
+## Conclusion
+
+Although in this data set on average manual vehicles achieve a fuel efficency of 7.2 miles per gallon more than automatic vehicles, transmission type was not a particularly good predictor of fuel efficiency. We were able to identify that the number of cylinders and the weight of the automobile were good predictors of fuel efficiency, achieving an adjusted R squared of 0.82. If we add transmission type to this model, then the difference in fuel efficency for a manual transmission is much smaller, just 0.13 miles per gallon for a vehicle with the same weight, displacement and number of cylinders. Therefore we conclude that number of cylinders and weight are good predictors of fuel efficiency, but transmission type is not. 
+
+# Appendix
+
+## Data set profile results
+
+```{r}
+str(mtcars)
+```
+
+## Pairs plot analysis results
+
+The plots showed a visual representation of trends in the first column, which relates to the mpg values. We noted trends of increase and decrease in mpg values in the following variables: cylinder(cyl), displacement(disp), Gross horsepower(hp), Rear axle ration(drat), weight(wt), 1/4 mile time(qsec) and Number of carburetors(carb).
+
+```{r, results="hide"}
+pairs(mpg ~ ., data=mtcars)
+```
+
+## Anova analysis results
+
+Next, the analysis of variance allowed the observation of the significant values with a P-value less than 0.05. Observe cylinder(cyl), weight(wt) and displacement(disp) have significant representation and low P-value. Therefore this analysis directed us to more substancial indication of which variables to create models with.
+
+```{r, results='asis'}
+data(mtcars)
+options(contrasts=c("contr.sum", "contr.poly"))
+aov.1 <- aov(mpg ~ ., data=mtcars)
+print(xtable(aov.1), type="latex")
+```
+
+## R squared analysis
+
+Next we built a different number of models, based on different combinations of cylinder, weight and displacement to find the best R squared index.
+
+### Fitting different models
+
+```{r, results='asis'}
+fit1 <- lm(mpg ~ cyl, data=mtcars)
+fit2 <- lm(mpg ~ wt, data = mtcars)
+fit3 <- lm(mpg ~ cyl + wt, data = mtcars)
+fit4 <- lm(mpg ~ disp, data = mtcars)
+fit5 <- lm(mpg ~ disp + cyl, data = mtcars)
+fit6 <- lm(mpg ~ disp + cyl + wt, data = mtcars)
+```
+
+The R squared values were:
+
+- Model 1: Cylinders to fuel efficiency **`r summary(fit1)$adj.r.squared`**.
+- Model 2: Weight to fuel efficiency **`r summary(fit2)$adj.r.squared`**.
+- Model 3: Cylinders and weight to fuel efficiency **`r summary(fit3)$adj.r.squared`**.
+- Model 4: Displacement to fuel efficiency **`r summary(fit4)$adj.r.squared`**.
+- Model 5: Displacement and cylinders to fuel efficiency **`r summary(fit5)$adj.r.squared`**.
+- Model 6: Displacement, cylinders and weight to fuel efficiency **`r summary(fit6)$adj.r.squared`**.
+
+The original question though was related to the transmission variable. We created a model for the transmission to also look at its R squared value.
+
+```{r, results='asis'}
+fit7 <- lm(mpg ~ am, data = mtcars)
+```
+
+The R squared value was **`r summary(fit7)$adj.r.squared`**. This low value indicated that transmission was not a good regressor.
+
+The last model built, included all the substantial variables found and also the transmission variable.
+
+```{r, results='asis'}
+fit8 <- lm(mpg ~ cyl + wt + disp + am, data = mtcars)
+print(xtable(fit8), type="latex")
+```
+
+The model using cylinders, weight, displacement and transmission achieved an adjusted R squared value of **`r summary(fit8)$adj.r.squared`**. This is slightly worse than model 3, that did not use transmission. If we look at the coefficients, we see that the coefficient for transmission type has decreased, indicating that for the same number of cylinders, weight and displacement, this model predicts that a car with a manual transmission would achieve an improvement in fuel efficiency of just 0.13 miles per gallon. 
